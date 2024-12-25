@@ -11,6 +11,7 @@ if (process.env.NODE_ENV === 'test') {
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
+  JWT_SECRET: z.string(),
   // DATABASE_CLIENT: z.enum(['sqlite', 'pg']).default('pg'),
   // DATABASE_URL: z.string(),
   PORT: z.coerce.number().default(3333),
