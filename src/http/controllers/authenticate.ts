@@ -13,9 +13,19 @@ export async function authenticateRoutes(app: FastifyInstance) {
     const { email, password } = authenticateBodySchema.parse(request.body)
     try {
       const autenticateUserUseCase = makeAuthenticateUserUseCase()
-      await autenticateUserUseCase.execute({ email, password })
-      return reply.status(200).send()
-    } catch (err: unknown) {
+      const { user } = await autenticateUserUseCase.execute({ email, password })
+      const token = await reply.jwtSign(
+        {},
+        {
+          sign: {
+            sub: user.id,
+          },
+        },
+      )
+      return reply.status(200).send({
+        token,
+      })
+    } catch (err) {
       if (err instanceof InvalidCredentialsError) {
         return reply.status(err.statusCode).send({ message: err.message })
       }
