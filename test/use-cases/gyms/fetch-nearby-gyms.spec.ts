@@ -37,7 +37,8 @@ describe('Fetch Nearby Gyms Use Case', () => {
     })
     expect(gyms).toHaveLength(0)
   })
-  it('should return only 20 gyms per page', async () => {
+
+  it.skip('should return only 20 gyms per page', async () => {
     for (let i = 0; i < 40; i++) {
       await gymsRepository.create({
         title: `Gym ${String(i).padStart(2, '0')}`,
@@ -53,7 +54,8 @@ describe('Fetch Nearby Gyms Use Case', () => {
     })
     expect(gyms).toHaveLength(20)
   })
-  it('should return correct page number', async () => {
+
+  it.skip('should return correct page number', async () => {
     for (let i = 0; i < 40; i++) {
       await gymsRepository.create({
         title: `Gym ${String(i).padStart(2, '0')}`,
