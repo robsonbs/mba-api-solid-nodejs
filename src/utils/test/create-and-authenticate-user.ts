@@ -20,7 +20,6 @@ export async function createAndAuthenticateUser(
     email: 'john@example.com',
     password: 'password',
   })
-  console.log(authResponse)
   const { token } = authResponse.body
   return { token }
 }
