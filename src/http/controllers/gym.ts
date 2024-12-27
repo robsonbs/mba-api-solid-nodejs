@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
-import { FastifyInstance } from 'fastify'
-import { verifyJwt } from '../middlewares/verify-jwt'
-import { z } from 'zod'
 import { makeCreateGymUseCase } from '@/use-cases/gyms/factories/make-create-gym-use-case'
-import { makeSearchGymsUseCase } from '@/use-cases/gyms/factories/make-search-gyms-use-case'
 import { makeFetchNearbyGymsUseCase } from '@/use-cases/gyms/factories/make-fetch-nearby-gyms-use-case'
+import { makeSearchGymsUseCase } from '@/use-cases/gyms/factories/make-search-gyms-use-case'
 import { makeCheckInUseCase } from '@/use-cases/users/factories/make-check-in-use-case'
+import { FastifyInstance } from 'fastify'
+import { z } from 'zod'
+import { verifyJwt } from '../middlewares/verify-jwt'
+import { verifyUserRole } from '../middlewares/verify-user-role'
 
 export async function gymsRoutes(app: FastifyInstance) {
   app.addHook('onRequest', verifyJwt)
@@ -55,28 +56,32 @@ export async function gymsRoutes(app: FastifyInstance) {
     return reply.status(200).send({ gyms })
   })
 
-  app.post('/', async (request, reply) => {
-    const createGymBodySchema = z.object({
-      title: z.string(),
-      description: z.string().nullable(),
-      phone: z.string().nullable(),
-      latitude: z.number().refine((value) => Math.abs(value) <= 90),
-      longitude: z.number().refine((value) => Math.abs(value) <= 180),
-    })
+  app.post(
+    '/',
+    { onRequest: [verifyUserRole('ADMIN')] },
+    async (request, reply) => {
+      const createGymBodySchema = z.object({
+        title: z.string(),
+        description: z.string().nullable(),
+        phone: z.string().nullable(),
+        latitude: z.number().refine((value) => Math.abs(value) <= 90),
+        longitude: z.number().refine((value) => Math.abs(value) <= 180),
+      })
 
-    const { title, description, phone, latitude, longitude } =
-      createGymBodySchema.parse(request.body)
+      const { title, description, phone, latitude, longitude } =
+        createGymBodySchema.parse(request.body)
 
-    const registerUserUseCase = makeCreateGymUseCase()
-    await registerUserUseCase.execute({
-      title,
-      description,
-      phone,
-      latitude,
-      longitude,
-    })
-    return reply.status(201).send()
-  })
+      const registerUserUseCase = makeCreateGymUseCase()
+      await registerUserUseCase.execute({
+        title,
+        description,
+        phone,
+        latitude,
+        longitude,
+      })
+      return reply.status(201).send()
+    },
+  )
 
   app.post('/:gymId/check-ins', async (request, reply) => {
     const createCheckInParams = z.object({

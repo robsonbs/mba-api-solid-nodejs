@@ -15,7 +15,9 @@ export async function authenticateRoutes(app: FastifyInstance) {
       const autenticateUserUseCase = makeAuthenticateUserUseCase()
       const { user } = await autenticateUserUseCase.execute({ email, password })
       const token = await reply.jwtSign(
-        {},
+        {
+          role: user.role,
+        },
         {
           sign: {
             sub: user.id,
@@ -23,7 +25,9 @@ export async function authenticateRoutes(app: FastifyInstance) {
         },
       )
       const refreshToken = await reply.jwtSign(
-        {},
+        {
+          role: user.role,
+        },
         {
           sign: {
             sub: user.id,

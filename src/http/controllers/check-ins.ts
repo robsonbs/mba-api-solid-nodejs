@@ -1,9 +1,10 @@
+import { makeValidateCheckInUseCase } from '@/use-cases/check-ins/factories/make-validate-check-ins-use-case'
 import { makeFetchUserCheckInsHistoryUseCase } from '@/use-cases/users/factories/make-fetch-user-check-ins-history-use-case'
+import { makeGetUserMetricsUseCase } from '@/use-cases/users/factories/make-get-user-metrics-use-case'
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { verifyJwt } from '../middlewares/verify-jwt'
-import { makeGetUserMetricsUseCase } from '@/use-cases/users/factories/make-get-user-metrics-use-case'
-import { makeValidateCheckInUseCase } from '@/use-cases/check-ins/factories/make-validate-check-ins-use-case'
+import { verifyUserRole } from '../middlewares/verify-user-role'
 
 export async function checkInsRoutes(app: FastifyInstance) {
   app.addHook('onRequest', verifyJwt)
@@ -39,20 +40,24 @@ export async function checkInsRoutes(app: FastifyInstance) {
     })
   })
 
-  app.patch('/:checkInId/validate', async (request, reply) => {
-    const validateCheckInParamsSchema = z.object({
-      checkInId: z.string().uuid(),
-    })
-    const { checkInId } = validateCheckInParamsSchema.parse(request.params)
+  app.patch(
+    '/:checkInId/validate',
+    { onRequest: [verifyUserRole('ADMIN')] },
+    async (request, reply) => {
+      const validateCheckInParamsSchema = z.object({
+        checkInId: z.string().uuid(),
+      })
+      const { checkInId } = validateCheckInParamsSchema.parse(request.params)
 
-    const validateCheckInUseCase = makeValidateCheckInUseCase()
+      const validateCheckInUseCase = makeValidateCheckInUseCase()
 
-    await validateCheckInUseCase.execute({
-      checkInId,
-    })
+      await validateCheckInUseCase.execute({
+        checkInId,
+      })
 
-    return reply.status(204).send()
-  })
+      return reply.status(204).send()
+    },
+  )
   //   app.get('/:id', async (request, reply) => {})
 
   //   app.put('/:id', async (request, reply) => {})

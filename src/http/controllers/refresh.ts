@@ -3,9 +3,9 @@ import { FastifyInstance } from 'fastify'
 export async function refreshTokenRoutes(app: FastifyInstance) {
   app.patch('/refresh', async (request, reply) => {
     await request.jwtVerify({ onlyCookie: true })
-
+    const { role } = request.user
     const token = await reply.jwtSign(
-      {},
+      { role },
       {
         sign: {
           sub: request.user.sub,
@@ -13,7 +13,7 @@ export async function refreshTokenRoutes(app: FastifyInstance) {
       },
     )
     const refreshToken = await reply.jwtSign(
-      {},
+      { role },
       {
         sign: {
           sub: request.user.sub,
