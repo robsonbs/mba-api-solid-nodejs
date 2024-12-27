@@ -70,7 +70,6 @@ describe('Fetch User Check-ins History Use Case', () => {
         latitude: -23.123,
         longitude: -46.123,
       })
-      console.log(checkin)
     }
 
     const { checkIns } = await sut.execute({
